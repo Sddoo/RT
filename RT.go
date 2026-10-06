@@ -18,12 +18,12 @@ const (
 
 type Vector Point
 
-func getViewportCoordinates(canvasX float32, canvasY float32) (viewportX float32, viewportY float32) {
-	return CANVAS_VIEWPORT_WIDTH_SCALING * canvasX, CANVAS_VIEWPORT_HEIGHT_SCALING * canvasY
-}
-
 func NewVector(start Point, end Point) Vector {
 	return Vector{end.X - start.X, end.Y - start.Y, end.Z - start.Z}
+}
+
+func getViewportCoordinates(canvasX float32, canvasY float32, cameraZ float32) (viewportX float32, viewportY float32, viewportZ float32) {
+	return CANVAS_VIEWPORT_WIDTH_SCALING * canvasX, CANVAS_VIEWPORT_HEIGHT_SCALING * canvasY, cameraZ + VIEWPORT_DISTANCE
 }
 
 func RT(mapConfig MapConfig) {
@@ -32,7 +32,7 @@ func RT(mapConfig MapConfig) {
 	}
 	defer sdl.Quit()
 
-	window, err := sdl.CreateWindow("test", sdl.WINDOWPOS_UNDEFINED, sdl.WINDOWPOS_UNDEFINED, CANVAS_WIDTH, CANVAS_HEIGHT, sdl.WINDOW_SHOWN)
+	window, err := sdl.CreateWindow("RT", sdl.WINDOWPOS_UNDEFINED, sdl.WINDOWPOS_UNDEFINED, CANVAS_WIDTH, CANVAS_HEIGHT, sdl.WINDOW_SHOWN)
 	if err != nil {
 		panic(err)
 	}
