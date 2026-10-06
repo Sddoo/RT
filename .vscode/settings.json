@@ -1,0 +1,8 @@
+{
+  "go.toolsEnvVars": {
+    "CGO_ENABLED": "1",
+    "CC": "gcc"
+  },
+  "editor.defaultFormatter": "golang.go",
+  "editor.formatOnSave": true
+}

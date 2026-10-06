@@ -1,0 +1,156 @@
+{
+  "height": 10,
+  "map": [
+    [
+      {
+        "isWall": true
+      },
+      {
+        "isWall": true
+      },
+      {
+        "isWall": true
+      },
+      {
+        "isWall": true
+      },
+      {
+        "isWall": true
+      },
+      {
+        "isWall": true
+      },
+      {
+        "isWall": true
+      },
+      {
+        "isWall": true
+      }
+    ],
+    [
+      {
+        "isWall": true
+      },
+      {},
+      {},
+      {
+        "cylinder": {
+          "height": 3,
+          "radius": 1,
+          "color": {
+            "R": 255,
+            "G": 255,
+            "B": 255
+          }
+        }
+      },
+      {},
+      {},
+      {},
+      {
+        "isWall": true
+      }
+    ],
+    [
+      {
+        "isWall": true
+      },
+      {},
+      {},
+      {},
+      {},
+      {},
+      {},
+      {
+        "isWall": true
+      }
+    ],
+    [
+      {
+        "isWall": true
+      },
+      {},
+      {},
+      {},
+      {},
+      {},
+      {},
+      {
+        "isWall": true
+      }
+    ],
+    [
+      {
+        "isWall": true
+      },
+      {},
+      {},
+      {},
+      {},
+      {},
+      {},
+      {
+        "isWall": true
+      }
+    ],
+    [
+      {
+        "isWall": true
+      },
+      {},
+      {},
+      {},
+      {},
+      {},
+      {},
+      {
+        "isWall": true
+      }
+    ],
+    [
+      {
+        "isWall": true
+      },
+      {},
+      {},
+      {},
+      {
+        "camera": {
+          "direction": 0,
+          "height": 4
+        }
+      },
+      {},
+      {},
+      {
+        "isWall": true
+      }
+    ],
+    [
+      {
+        "isWall": true
+      },
+      {
+        "isWall": true
+      },
+      {
+        "isWall": true
+      },
+      {
+        "isWall": true
+      },
+      {
+        "isWall": true
+      },
+      {
+        "isWall": true
+      },
+      {
+        "isWall": true
+      },
+      {
+        "isWall": true
+      }
+    ]
+  ]
+}
