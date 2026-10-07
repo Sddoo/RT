@@ -5,16 +5,12 @@ import (
 	"log"
 	"os"
 
+	u "test/utils"
+
 	"github.com/veandco/go-sdl2/sdl"
 )
 
 const MapPath = "map1.json"
-
-type Point struct {
-	X float32 `json:"x"`
-	Y float32 `json:"y"`
-	Z float32 `json:"z"`
-}
 
 type Dimensions struct {
 	Height   float32 `json:"height,omitzero"`
@@ -25,8 +21,8 @@ type Dimensions struct {
 }
 
 type Camera struct {
-	Position  Point `json:"position"`
-	Direction Point `json:"direction"`
+	Position  u.Point `json:"position"`
+	Direction u.Point `json:"direction"`
 }
 
 // type Room struct {
@@ -36,12 +32,12 @@ type Camera struct {
 // }
 
 type Spotlight struct {
-	Position Point `json:"position"`
+	Position u.Point `json:"position"`
 }
 
 type Figure struct {
 	Name       string     `json:"name"`
-	Position   Point      `json:"position"`
+	Position   u.Point    `json:"position"`
 	Color      sdl.RGB888 `json:"color"`
 	Dimensions Dimensions `json:"dimensions"`
 }
