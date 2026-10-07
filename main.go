@@ -25,28 +25,25 @@ type Camera struct {
 	Direction u.Point `json:"direction"`
 }
 
-// type Room struct {
-// 	Width  float32 `json:"width"`
-// 	Height float32 `json:"height"`
-// 	Length float32 `json:"length"`
-// }
-
-type Spotlight struct {
-	Position u.Point `json:"position"`
+type Light struct {
+	Name      string  `json:"name"`
+	Type      string  `json:"type"`
+	Position  u.Point `json:"position"`
+	Intensity float32 `json:"intensity"`
 }
 
 type Figure struct {
 	Name       string     `json:"name"`
+	Type       string     `json:"type"`
 	Position   u.Point    `json:"position"`
 	Color      sdl.RGB888 `json:"color"`
 	Dimensions Dimensions `json:"dimensions"`
 }
 
 type MapConfig struct {
-	// Room      Room      `json:"room"`
-	Camera    Camera    `json:"camera"`
-	Spotlight Spotlight `json:"spotlight"`
-	Figures   []Figure  `json:"figures"`
+	Camera  Camera   `json:"camera"`
+	Lights  []Light  `json:"lights"`
+	Figures []Figure `json:"figures"`
 }
 
 func NewMapConfig(filePath string) MapConfig {

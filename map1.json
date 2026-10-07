@@ -11,27 +11,47 @@
       "z": 2.0
     }
   },
-  "spotlight": {
+  "lights": [{
+    "name": "main",
+    "type": "point",
     "position": {
-      "x": 5.0,
-      "y": 9.0,
+      "x": 3.0,
+      "y": 5.0,
       "z": 5.0
-    }
-  },
+    },
+    "intensity": 0.5
+  }],
   "figures": [{
-      "name": "sphere",
+      "name": "central",
+      "type": "sphere",
       "position": {
         "x": 5.0,
-        "y": 5.0,
-        "z": 5.0
+        "y": 4.0,
+        "z": 10.0
       },
       "color": {
-        "R": 209,
-        "G": 65,
-        "B": 65
+        "R": 155,
+        "G": 90,
+        "B": 0
       },
       "dimensions": {
-        "radius": 1.0
+        "radius": 2.0
+      }
+    }, {
+      "name": "floor",
+      "type": "sphere",
+      "position": {
+        "x": 5.0,
+        "y": -4996.0,
+        "z": 10.0
+      },
+      "color": {
+        "R": 99,
+        "G": 99,
+        "B": 99
+      },
+      "dimensions": {
+        "radius": 5000.0
       }
     }
   ]
