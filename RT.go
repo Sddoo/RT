@@ -126,7 +126,7 @@ func rayTrace(mapConfig MapConfig, d u.Vector, o u.Vector, depth int) sdl.RGB888
 	}
 
 	R := reflectRay(u.Prod(d, -1), N)
-	reflectedColor := rayTrace(mapConfig, u.Vector(P), R, depth-1)
+	reflectedColor := rayTrace(mapConfig, R, u.Vector(P), depth-1)
 
 	return u.RGBSum(u.RGBProduct(localColor, (1-r)), u.RGBProduct(reflectedColor, r))
 }
@@ -152,7 +152,7 @@ func RT(mapConfig MapConfig) {
 		for y := -CANVAS_HALF_HEIGHT; y < CANVAS_HALF_HEIGHT; y++ {
 			viewportPoint := getViewportCoordinates(float32(x), float32(y), mapConfig.Camera)
 			d := u.NewVector(mapConfig.Camera.Position, viewportPoint)
-			color := rayTrace(mapConfig, d, u.Vector(mapConfig.Camera.Position), 3)
+			color := rayTrace(mapConfig, d, u.Vector(mapConfig.Camera.Position), 4)
 			surface.Set(x+CANVAS_HALF_WIDTH, CANVAS_HEIGHT-1-(y+CANVAS_HALF_HEIGHT), color)
 		}
 	}
