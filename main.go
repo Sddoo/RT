@@ -38,6 +38,7 @@ type Figure struct {
 	Position   u.Point    `json:"position"`
 	Color      sdl.RGB888 `json:"color"`
 	Dimensions Dimensions `json:"dimensions"`
+	Specular   int        `json:"specular"`
 }
 
 type MapConfig struct {

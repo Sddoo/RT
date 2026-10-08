@@ -3,7 +3,7 @@
     "position": {
       "x": 5.0,
       "y": 5.0,
-      "z": 1.0
+      "z": 6.0
     },
     "direction": {
       "x": 5.0,
@@ -22,6 +22,23 @@
     "intensity": 0.6
   }],
   "figures": [{
+      "name": "left",
+      "type": "sphere",
+      "position": {
+        "x": 3.0,
+        "y": 5.0,
+        "z": 11.0
+      },
+      "color": {
+        "R": 31,
+        "G": 191,
+        "B": 189
+      },
+      "dimensions": {
+        "radius": 1.0
+      },
+      "specular": 100
+    }, {
       "name": "central",
       "type": "sphere",
       "position": {
@@ -35,8 +52,26 @@
         "B": 1
       },
       "dimensions": {
-        "radius": 2.0
-      }
+        "radius": 1.0
+      },
+      "specular": 100
+    }, {
+      "name": "right",
+      "type": "sphere",
+      "position": {
+        "x": 7.0,
+        "y": 5.0,
+        "z": 11.0
+      },
+      "color": {
+        "R": 189,
+        "G": 31,
+        "B": 191
+      },
+      "dimensions": {
+        "radius": 1.0
+      },
+      "specular": 100
     }, {
       "name": "floor",
       "type": "sphere",
@@ -52,7 +87,8 @@
       },
       "dimensions": {
         "radius": 5000.0
-      }
+      },
+      "specular": -1
     }
   ]
 }

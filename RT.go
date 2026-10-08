@@ -42,19 +42,53 @@ func intersectSphere(figure Figure, d u.Vector, cameraPosition u.Point) (t1 floa
 	}
 	t1 = (-b + float32(math.Sqrt(float64(discriminant)))) / (2 * a)
 	t2 = (-b - float32(math.Sqrt(float64(discriminant)))) / (2 * a)
-	return
+	return t1, t2
 }
 
-func computeLighting(lights []Light, N u.Vector, P u.Point) float32 {
+func closestIntersection(figures []Figure, d u.Vector, o u.Point, tMin float32, tMax float32) (closestFigure Figure, closestT float32) {
+	var t1, t2 float32
+	closestT = float32(math.MaxFloat32)
+
+	for _, figure := range figures {
+		switch figure.Type {
+		case "sphere":
+			t1, t2 = intersectSphere(figure, d, o)
+		}
+		if t1 > tMin && t1 < tMax && t1 < closestT {
+			closestT = t1
+			closestFigure = figure
+		}
+		if t2 > tMin && t2 < tMax && t2 < closestT {
+			closestT = t2
+			closestFigure = figure
+		}
+	}
+
+	return closestFigure, closestT
+}
+
+func computeLighting(mapConfig MapConfig, N u.Vector, P u.Point, V u.Vector, figure Figure) float32 {
 	i := float32(0.0)
 
-	for _, light := range lights {
+	for _, light := range mapConfig.Lights {
 		switch light.Type {
 		case "point":
 			L := u.NewVector(P, light.Position)
+			shadowSphere, shadowT := closestIntersection(mapConfig.Figures, P, L, 0.001, 1.0)
+
+			// diffuse
 			calcIntensity := light.Intensity * u.Dot(N, L) / (u.Len(N) * u.Len(L))
 			if calcIntensity >= 0 {
 				i += calcIntensity
+			}
+
+			// specular reflection
+			if figure.Specular != -1 {
+				R := u.Sum(u.Prod(u.Prod(N, 2), u.Dot(N, L)), u.Prod(L, -1))
+				rDotV := u.Dot(R, V)
+				if rDotV > 0 {
+					i += light.Intensity * float32(math.Pow(float64(rDotV/(u.Len(R)*u.Len(V))), float64(figure.Specular)))
+				}
 			}
 		case "ambient":
 			i += light.Intensity
@@ -65,38 +99,17 @@ func computeLighting(lights []Light, N u.Vector, P u.Point) float32 {
 }
 
 func rayTrace(mapConfig MapConfig, d u.Vector) sdl.RGB888 {
-	var t1, t2 float32
-	var closestSphere Figure
+	closestFigure, closestT := closestIntersection(mapConfig.Figures, d, mapConfig.Camera.Position, VIEWPORT_DISTANCE, math.MaxFloat32)
 
-	figures := mapConfig.Figures
-	closestT := float32(math.MaxFloat32)
-	color := BACKGROUND_COLOR
-
-	for _, figure := range figures {
-		switch figure.Type {
-		case "sphere":
-			t1, t2 = intersectSphere(figure, d, mapConfig.Camera.Position)
-		}
-		if t1 > VIEWPORT_DISTANCE && t1 < closestT {
-			closestT = t1
-			closestSphere = figure
-			color = closestSphere.Color
-		}
-		if t2 > VIEWPORT_DISTANCE && t2 < closestT {
-			closestT = t2
-			closestSphere = figure
-			color = closestSphere.Color
-		}
+	if closestT == float32(math.MaxFloat32) {
+		return BACKGROUND_COLOR
 	}
 
-	if closestT > 0 && closestT < math.MaxFloat32 {
-		P := u.Point(u.Sum(u.Vector(mapConfig.Camera.Position), u.Prod(d, closestT)))
-		N := u.NewVector(closestSphere.Position, P)
-		N = u.Devision(N, u.Len(N))
-		i := computeLighting(mapConfig.Lights, N, P)
-		return u.RGBProduct(color, i)
-	}
-	return color
+	P := u.Point(u.Sum(u.Vector(mapConfig.Camera.Position), u.Prod(d, closestT)))
+	N := u.NewVector(closestFigure.Position, P)
+	N = u.Devision(N, u.Len(N))
+	i := computeLighting(mapConfig.Lights, N, P, u.Prod(d, -1), closestFigure)
+	return u.RGBProduct(closestFigure.Color, i)
 }
 
 func RT(mapConfig MapConfig) {
