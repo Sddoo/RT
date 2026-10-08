@@ -82,7 +82,6 @@ func computeLighting(mapConfig MapConfig, N u.Vector, P u.Vector, V u.Vector, fi
 			// shadows
 			shadowFigure, _ := closestIntersection(mapConfig.Figures, L, P, 0.001, 1.0)
 			if shadowFigure != nil {
-				// fmt.Println(shadowFigure)
 				continue
 			}
 
@@ -131,6 +130,24 @@ func rayTrace(mapConfig MapConfig, d u.Vector, o u.Vector, depth int) sdl.RGB888
 	return u.RGBSum(u.RGBProduct(localColor, (1-r)), u.RGBProduct(reflectedColor, r))
 }
 
+func renderRT(window *sdl.Window, mapConfig *MapConfig) {
+	surface, err := window.GetSurface()
+	if err != nil {
+		panic(err)
+	}
+
+	for x := -CANVAS_HALF_WIDTH; x < CANVAS_HALF_WIDTH; x++ {
+		for y := -CANVAS_HALF_HEIGHT; y < CANVAS_HALF_HEIGHT; y++ {
+			viewportPoint := getViewportCoordinates(float32(x), float32(y), mapConfig.Camera)
+			d := u.NewVector(mapConfig.Camera.Position, viewportPoint)
+			color := rayTrace(*mapConfig, d, u.Vector(mapConfig.Camera.Position), 1)
+			surface.Set(x+CANVAS_HALF_WIDTH, CANVAS_HEIGHT-1-(y+CANVAS_HALF_HEIGHT), color)
+		}
+	}
+
+	window.UpdateSurface()
+}
+
 func RT(mapConfig MapConfig) {
 	if err := sdl.Init(sdl.INIT_EVERYTHING); err != nil {
 		panic(err)
@@ -143,32 +160,34 @@ func RT(mapConfig MapConfig) {
 	}
 	defer window.Destroy()
 
-	surface, err := window.GetSurface()
-	if err != nil {
-		panic(err)
-	}
-
-	for x := -CANVAS_HALF_WIDTH; x < CANVAS_HALF_WIDTH; x++ {
-		for y := -CANVAS_HALF_HEIGHT; y < CANVAS_HALF_HEIGHT; y++ {
-			viewportPoint := getViewportCoordinates(float32(x), float32(y), mapConfig.Camera)
-			d := u.NewVector(mapConfig.Camera.Position, viewportPoint)
-			color := rayTrace(mapConfig, d, u.Vector(mapConfig.Camera.Position), 4)
-			surface.Set(x+CANVAS_HALF_WIDTH, CANVAS_HEIGHT-1-(y+CANVAS_HALF_HEIGHT), color)
-		}
-	}
-	window.UpdateSurface()
+	renderRT(window, &mapConfig)
 
 	running := true
 	for running {
 		for event := sdl.PollEvent(); event != nil; event = sdl.PollEvent() {
-			switch event.(type) {
-			case *sdl.QuitEvent: // NOTE: Please use `*sdl.QuitEvent` for `v0.4.x` (current version).
+			switch t := event.(type) {
+			case *sdl.KeyboardEvent:
+				if t.Type == sdl.KEYDOWN && t.Keysym.Sym == sdl.K_d {
+					mapConfig.Camera.Position.X += 0.1
+				} else if t.Type == sdl.KEYDOWN && t.Keysym.Sym == sdl.K_a {
+					mapConfig.Camera.Position.X -= 0.1
+				} else if t.Type == sdl.KEYDOWN && t.Keysym.Sym == sdl.K_SPACE {
+					mapConfig.Camera.Position.Y += 0.1
+				} else if t.Type == sdl.KEYDOWN && t.Keysym.Sym == sdl.K_LCTRL {
+					mapConfig.Camera.Position.Y -= 0.1
+				} else if t.Type == sdl.KEYDOWN && t.Keysym.Sym == sdl.K_w {
+					mapConfig.Camera.Position.Z += 0.1
+				} else if t.Type == sdl.KEYDOWN && t.Keysym.Sym == sdl.K_s {
+					mapConfig.Camera.Position.Z -= 0.1
+				}
+				renderRT(window, &mapConfig)
+			case *sdl.QuitEvent:
 				println("Quit")
 				running = false
 			}
 		}
 
-		sdl.Delay(33)
+		sdl.Delay(0)
 	}
 
 }
