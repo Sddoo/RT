@@ -12,14 +12,32 @@
     }
   },
   "lights": [{
-    "name": "main",
+    "name": "leftLight",
     "type": "point",
+    "position": {
+      "x": -1.0,
+      "y": 5.0,
+      "z": 5.0
+    },
+    "intensity": 0.3
+  }, {
+    "name": "rightLight",
+    "type": "point",
+    "position": {
+      "x": 9.0,
+      "y": 5.0,
+      "z": 5.0
+    },
+    "intensity": 0.3
+  }, {
+    "name": "ambient",
+    "type": "ambient",
     "position": {
       "x": 3.0,
       "y": 5.0,
       "z": 5.0
     },
-    "intensity": 0.6
+    "intensity": 0.2
   }],
   "figures": [{
       "name": "left",
@@ -37,7 +55,8 @@
       "dimensions": {
         "radius": 1.0
       },
-      "specular": 100
+      "specular": 100,
+      "reflection": 0.4
     }, {
       "name": "central",
       "type": "sphere",
@@ -54,7 +73,8 @@
       "dimensions": {
         "radius": 1.0
       },
-      "specular": 100
+      "specular": 100,
+      "reflection": 0.3
     }, {
       "name": "right",
       "type": "sphere",
@@ -71,7 +91,8 @@
       "dimensions": {
         "radius": 1.0
       },
-      "specular": 100
+      "specular": 100,
+      "reflection": 0.4
     }, {
       "name": "floor",
       "type": "sphere",

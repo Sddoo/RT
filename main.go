@@ -39,6 +39,7 @@ type Figure struct {
 	Color      sdl.RGB888 `json:"color"`
 	Dimensions Dimensions `json:"dimensions"`
 	Specular   int        `json:"specular"`
+	Reflection float32    `json:"reflection"`
 }
 
 type MapConfig struct {

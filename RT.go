@@ -30,8 +30,12 @@ func getViewportCoordinates(canvasX float32, canvasY float32, camera Camera) u.P
 	}
 }
 
-func intersectSphere(figure Figure, d u.Vector, cameraPosition u.Point) (t1 float32, t2 float32) {
-	co := u.NewVector(figure.Position, cameraPosition)
+func reflectRay(R u.Vector, N u.Vector) u.Vector {
+	return u.Sum(u.Prod(u.Prod(N, 2), u.Dot(N, R)), u.Prod(R, -1))
+}
+
+func intersectSphere(figure Figure, d u.Vector, cameraPosition u.Vector) (t1 float32, t2 float32) {
+	co := u.NewVector(figure.Position, u.Point(cameraPosition))
 	a := u.Dot(d, d)
 	b := 2 * u.Dot(co, d)
 	c := u.Dot(co, co) - figure.Dimensions.Radius*figure.Dimensions.Radius
@@ -45,9 +49,9 @@ func intersectSphere(figure Figure, d u.Vector, cameraPosition u.Point) (t1 floa
 	return t1, t2
 }
 
-func closestIntersection(figures []Figure, d u.Vector, o u.Point, tMin float32, tMax float32) (closestFigure Figure, closestT float32) {
+func closestIntersection(figures []Figure, d u.Vector, o u.Vector, tMin float32, tMax float32) (closestFigure *Figure, closestT float32) {
 	var t1, t2 float32
-	closestT = float32(math.MaxFloat32)
+	closestT = tMax
 
 	for _, figure := range figures {
 		switch figure.Type {
@@ -56,25 +60,31 @@ func closestIntersection(figures []Figure, d u.Vector, o u.Point, tMin float32, 
 		}
 		if t1 > tMin && t1 < tMax && t1 < closestT {
 			closestT = t1
-			closestFigure = figure
+			closestFigure = &figure
 		}
 		if t2 > tMin && t2 < tMax && t2 < closestT {
 			closestT = t2
-			closestFigure = figure
+			closestFigure = &figure
 		}
 	}
 
 	return closestFigure, closestT
 }
 
-func computeLighting(mapConfig MapConfig, N u.Vector, P u.Point, V u.Vector, figure Figure) float32 {
+func computeLighting(mapConfig MapConfig, N u.Vector, P u.Vector, V u.Vector, figure *Figure) float32 {
 	i := float32(0.0)
 
 	for _, light := range mapConfig.Lights {
 		switch light.Type {
 		case "point":
-			L := u.NewVector(P, light.Position)
-			shadowSphere, shadowT := closestIntersection(mapConfig.Figures, P, L, 0.001, 1.0)
+			L := u.NewVector(u.Point(P), light.Position)
+
+			// shadows
+			shadowFigure, _ := closestIntersection(mapConfig.Figures, L, P, 0.001, 1.0)
+			if shadowFigure != nil {
+				// fmt.Println(shadowFigure)
+				continue
+			}
 
 			// diffuse
 			calcIntensity := light.Intensity * u.Dot(N, L) / (u.Len(N) * u.Len(L))
@@ -98,8 +108,8 @@ func computeLighting(mapConfig MapConfig, N u.Vector, P u.Point, V u.Vector, fig
 	return i
 }
 
-func rayTrace(mapConfig MapConfig, d u.Vector) sdl.RGB888 {
-	closestFigure, closestT := closestIntersection(mapConfig.Figures, d, mapConfig.Camera.Position, VIEWPORT_DISTANCE, math.MaxFloat32)
+func rayTrace(mapConfig MapConfig, d u.Vector, o u.Vector, depth int) sdl.RGB888 {
+	closestFigure, closestT := closestIntersection(mapConfig.Figures, d, o, VIEWPORT_DISTANCE, math.MaxFloat32)
 
 	if closestT == float32(math.MaxFloat32) {
 		return BACKGROUND_COLOR
@@ -108,8 +118,17 @@ func rayTrace(mapConfig MapConfig, d u.Vector) sdl.RGB888 {
 	P := u.Point(u.Sum(u.Vector(mapConfig.Camera.Position), u.Prod(d, closestT)))
 	N := u.NewVector(closestFigure.Position, P)
 	N = u.Devision(N, u.Len(N))
-	i := computeLighting(mapConfig.Lights, N, P, u.Prod(d, -1), closestFigure)
-	return u.RGBProduct(closestFigure.Color, i)
+	i := computeLighting(mapConfig, N, u.Vector(P), u.Prod(d, -1), closestFigure)
+	localColor := u.RGBProduct(closestFigure.Color, i)
+	r := closestFigure.Reflection
+	if depth <= 0 || r <= 0 {
+		return localColor
+	}
+
+	R := reflectRay(u.Prod(d, -1), N)
+	reflectedColor := rayTrace(mapConfig, u.Vector(P), R, depth-1)
+
+	return u.RGBSum(u.RGBProduct(localColor, (1-r)), u.RGBProduct(reflectedColor, r))
 }
 
 func RT(mapConfig MapConfig) {
@@ -133,7 +152,7 @@ func RT(mapConfig MapConfig) {
 		for y := -CANVAS_HALF_HEIGHT; y < CANVAS_HALF_HEIGHT; y++ {
 			viewportPoint := getViewportCoordinates(float32(x), float32(y), mapConfig.Camera)
 			d := u.NewVector(mapConfig.Camera.Position, viewportPoint)
-			color := rayTrace(mapConfig, d)
+			color := rayTrace(mapConfig, d, u.Vector(mapConfig.Camera.Position), 3)
 			surface.Set(x+CANVAS_HALF_WIDTH, CANVAS_HEIGHT-1-(y+CANVAS_HALF_HEIGHT), color)
 		}
 	}
