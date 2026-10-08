@@ -20,7 +20,7 @@ const (
 	CANVAS_VIEWPORT_HEIGHT_SCALING = VIEWPORT_HEIGHT / CANVAS_HEIGHT
 )
 
-var BACKGROUND_COLOR = sdl.RGB888{255, 255, 255}
+var BACKGROUND_COLOR = sdl.RGB888{0, 0, 0}
 
 func getViewportCoordinates(canvasX float32, canvasY float32, camera Camera) u.Point {
 	return u.Point{
@@ -49,9 +49,18 @@ func computeLighting(lights []Light, N u.Vector, P u.Point) float32 {
 	i := float32(0.0)
 
 	for _, light := range lights {
-		L := u.NewVector(P, light.Position)
-		i += light.Intensity * u.Dot(N, L) / (u.Len(N) * u.Len(L))
+		switch light.Type {
+		case "point":
+			L := u.NewVector(P, light.Position)
+			calcIntensity := light.Intensity * u.Dot(N, L) / (u.Len(N) * u.Len(L))
+			if calcIntensity >= 0 {
+				i += calcIntensity
+			}
+		case "ambient":
+			i += light.Intensity
+		}
 	}
+
 	return i
 }
 
@@ -80,9 +89,14 @@ func rayTrace(mapConfig MapConfig, d u.Vector) sdl.RGB888 {
 		}
 	}
 
-	P := u.Point(u.Sum(u.Vector(mapConfig.Camera.Position), u.Prod(d, closestT)))
-	N := u.NewVector(closestSphere.Position, P)
-	return u.RGBProduct(color, computeLighting(mapConfig.Lights, N, P))
+	if closestT > 0 && closestT < math.MaxFloat32 {
+		P := u.Point(u.Sum(u.Vector(mapConfig.Camera.Position), u.Prod(d, closestT)))
+		N := u.NewVector(closestSphere.Position, P)
+		N = u.Devision(N, u.Len(N))
+		i := computeLighting(mapConfig.Lights, N, P)
+		return u.RGBProduct(color, i)
+	}
+	return color
 }
 
 func RT(mapConfig MapConfig) {

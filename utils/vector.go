@@ -27,3 +27,7 @@ func Sum(v1 Vector, v2 Vector) Vector {
 func Prod(v Vector, factor float32) Vector {
 	return Vector{v.X * factor, v.Y * factor, v.Z * factor}
 }
+
+func Devision(v Vector, divider float32) Vector {
+	return Vector{v.X / divider, v.Y / divider, v.Z / divider}
+}
