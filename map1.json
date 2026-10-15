@@ -57,7 +57,7 @@
       "type": "sphere",
       "position": {
         "x": 5.0,
-        "y": 4.0,
+        "y": 6.0,
         "z": 10.0
       },
       "color": {

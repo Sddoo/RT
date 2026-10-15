@@ -18,6 +18,9 @@ const (
 	VIEWPORT_DISTANCE              = 1.0
 	CANVAS_VIEWPORT_WIDTH_SCALING  = VIEWPORT_WIDTH / CANVAS_WIDTH
 	CANVAS_VIEWPORT_HEIGHT_SCALING = VIEWPORT_HEIGHT / CANVAS_HEIGHT
+
+	GOROUTINES_COUNT = 10
+	WIDTH_PART       = CANVAS_WIDTH / GOROUTINES_COUNT
 )
 
 var BACKGROUND_COLOR = sdl.RGB888{0, 0, 0}
@@ -130,19 +133,35 @@ func rayTrace(mapConfig MapConfig, d u.Vector, o u.Vector, depth int) sdl.RGB888
 	return u.RGBSum(u.RGBProduct(localColor, (1-r)), u.RGBProduct(reflectedColor, r))
 }
 
-func renderRT(window *sdl.Window, mapConfig *MapConfig) {
-	surface, err := window.GetSurface()
-	if err != nil {
-		panic(err)
-	}
+func computePixels(surface *sdl.Surface, mapConfig *MapConfig, i int, done chan bool) {
+	width := WIDTH_PART * i
+	startX, endX := -CANVAS_HALF_WIDTH+width, -CANVAS_HALF_WIDTH+width+WIDTH_PART
 
-	for x := -CANVAS_HALF_WIDTH; x < CANVAS_HALF_WIDTH; x++ {
+	for x := startX; x < endX; x++ {
 		for y := -CANVAS_HALF_HEIGHT; y < CANVAS_HALF_HEIGHT; y++ {
 			viewportPoint := getViewportCoordinates(float32(x), float32(y), mapConfig.Camera)
 			d := u.NewVector(mapConfig.Camera.Position, viewportPoint)
 			color := rayTrace(*mapConfig, d, u.Vector(mapConfig.Camera.Position), 1)
 			surface.Set(x+CANVAS_HALF_WIDTH, CANVAS_HEIGHT-1-(y+CANVAS_HALF_HEIGHT), color)
 		}
+	}
+	done <- true
+}
+
+func renderRT(window *sdl.Window, mapConfig *MapConfig) {
+	surface, err := window.GetSurface()
+	if err != nil {
+		panic(err)
+	}
+
+	done := make(chan bool, GOROUTINES_COUNT)
+
+	for i := range GOROUTINES_COUNT {
+		go computePixels(surface, mapConfig, i, done)
+	}
+
+	for range GOROUTINES_COUNT {
+		<-done
 	}
 
 	window.UpdateSurface()
